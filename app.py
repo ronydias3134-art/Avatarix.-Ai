@@ -1,12 +1,13 @@
 import os
 import json
 from flask import Flask, request, jsonify
-from google import genai
+import google.generativeai as genai
 
 app = Flask(__name__)
 
-# Instancia o cliente da Google GenAI
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 SYSTEM_INSTRUCTION = """
 És o motor central do Avatarx.ai, um ecossistema autónomo de geração de conteúdo desportivo.
@@ -38,16 +39,15 @@ def gerar():
         if not GEMINI_API_KEY:
             return jsonify({"erro": "GEMINI_API_KEY não configurada no ambiente."}), 500
 
-        client = genai.Client(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            generation_config={"response_mime_type": "application/json"}
+        )
 
         prompt_final = f"Instrução: {SYSTEM_INSTRUCTION}\nAvatar: {avatar}\nPedido: {prompt_usuario}"
+        resposta = model.generate_content(prompt_final)
         
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=prompt_final,
-        )
-        
-        return jsonify(json.loads(response.text))
+        return jsonify(json.loads(resposta.text))
         
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
