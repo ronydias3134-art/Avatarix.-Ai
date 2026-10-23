@@ -5,12 +5,12 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# Configuração da API do Gemini (suporta GEMINI_API_KEY ou GOOGLE_API_KEY)
+# Configuração da API do Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-# Prompts com Suporte a B-Roll (Visual Cues) e A/B Testing de Ganchos (Hooks)
+# Prompts calibrados para 26 segundos (55-65 palavras) com A/B Hooks e B-Roll
 PERSONAS = {
     "us_sports": {
         "name": "US Sports & Culture (NFL, NBA, MLB)",
@@ -107,37 +107,44 @@ def generate_script():
 
     persona_info = PERSONAS[persona_key]
 
-    try:
-        # Tenta utilizar a versão padrão estável do Gemini Flash
+    # Lista de modelos por ordem de prioridade
+    models_to_try = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+    response_text = None
+    last_error = None
+
+    for model_name in models_to_try:
         try:
             model = genai.GenerativeModel(
-                model_name="gemini-2.5-flash",
+                model_name=model_name,
                 generation_config={"response_mime_type": "application/json"}
             )
             prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
-            response = model.generate_content(prompt)
-        except Exception:
-            # Fallback para alias alternativo caso a chave utilize o modelo flash padrão
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash-latest",
-                generation_config={"response_mime_type": "application/json"}
-            )
-            prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
-            response = model.generate_content(prompt)
+            res = model.generate_content(prompt)
+            if res and res.text:
+                response_text = res.text
+                break
+        except Exception as e:
+            last_error = e
+            continue
 
-        script_data = json.loads(response.text)
+    if not response_text:
+        return jsonify({
+            "status": "error",
+            "message": f"Erro ao gerar roteiro: {str(last_error)}"
+        }), 500
 
+    try:
+        script_data = json.loads(response_text)
         return jsonify({
             "status": "success",
             "persona": persona_key,
             "script": script_data,
             "target_duration": "26s"
         })
-
-    except Exception as e:
+    except Exception as parse_err:
         return jsonify({
             "status": "error",
-            "message": f"Erro ao gerar roteiro: {str(e)}"
+            "message": f"Erro ao processar JSON: {str(parse_err)}"
         }), 500
 
 if __name__ == "__main__":
