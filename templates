@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatarx.ai - Central de Conteúdo</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        h1 { color: #38bdf8; text-align: center; font-size: 24px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #cbd5e1; }
+        select, textarea, button { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; }
+        textarea { height: 100px; resize: vertical; }
+        button { background: #0284c7; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 20px; transition: background 0.2s; }
+        button:hover { background: #0ea5e9; }
+        .result { margin-top: 20px; background: #0f172a; padding: 15px; border-radius: 8px; border-left: 4px solid #38bdf8; white-space: pre-wrap; word-break: break-word; }
+        .loading { text-align: center; color: #94a3b8; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Avatarx.ai</h1>
+        <p style="text-align: center; color: #94a3b8; font-size: 14px;">Ecossistema Autónomo de Conteúdo Desportivo</p>
+        
+        <label for="avatar">Selecionar Persona (Avatar):</label>
+        <select id="avatar">
+            <option value="Europa/Benfica">🔴 Europa/Benfica (Foco no Benfica e Futebol Europeu)</option>
+            <option value="Global">🌍 Global (Análise Geral do Futebol)</option>
+            <option value="O Professor">🧠 O Professor (Análise Tática Profunda)</option>
+            <option value="O Reator">🔥 O Reator (Opinião Forte e Direta)</option>
+        </select>
+
+        <label for="prompt">Tema ou Tópico para o Conteúdo:</label>
+        <textarea id="prompt" placeholder="Ex: Análise da vitória brilhante na Champions League..."></textarea>
+
+        <button onclick="gerarConteudo()">Gerar Conteúdo Automático</button>
+
+        <div id="loading" class="loading">A inteligência artificial está a criar o conteúdo... ⚽</div>
+        
+        <div id="result" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        async function gerarConteudo() {
+            const avatar = document.getElementById('avatar').value;
+            const prompt = document.getElementById('prompt').value;
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+
+            if (!prompt) {
+                alert('Por favor, escreve um tema ou tópico!');
+                return;
+            }
+
+            loading.style.display = 'block';
+            resultDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/gerar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ avatar, prompt })
+                });
+
+                const data = await response.json();
+                loading.style.display = 'none';
+                resultDiv.style.display = 'block';
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `<strong>Avatar:</strong> ${data.avatar_ativo}\n\n` +
+                                          `<strong>Tipo:</strong> ${data.tipo_conteudo}\n\n` +
+                                          `<strong>Título:</strong> ${data.titulo}\n\n` +
+                                          `<strong>Conteúdo:</strong>\n${data.conteudo}\n\n` +
+                                          `<strong>Hashtags:</strong> ${data.hashtags.join(' ')}`;
+                } else {
+                    resultDiv.innerHTML = `Erro: ${data.erro}`;
+                }
+            } catch (err) {
+                loading.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `Erro de ligação: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
