@@ -1,33 +1,91 @@
 import os
 import json
-import requests
 from flask import Flask, render_template, request, jsonify
 import google.generativeai as genai
 
 app = Flask(__name__)
 
-# Configuração da API Key do Gemini
+# Configuração da API do Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-# Personas Pré-definidas para os Influenciadores/Avatares
+# Prompts com Suporte a B-Roll (Visual Cues) e A/B Testing de Ganchos (Hooks)
 PERSONAS = {
-    "europa_benfica": {
-        "name": "Europa / Benfica",
-        "system_instruction": "És um comentador e criador de conteúdo apaixonado pelo Benfica e pelo futebol europeu. O teu tom é dinâmico, envolvente, humano e conhecedor."
+    "us_sports": {
+        "name": "US Sports & Culture (NFL, NBA, MLB)",
+        "description": "Análises vibrantes de desporto americano e destaques com múltiplos ganchos.",
+        "system_instruction": (
+            "És um influenciador e especialista em desportos americanos (NBA, NFL, MLB). "
+            "Cria um roteiro para vídeo direcionado ao mercado americano calibrado para 26 SEGUNDOS (55 a 65 palavras). "
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "- 'hook_a': Gancho Curiosidade/Choque (0-3s)\n"
+            "- 'hook_b': Gancho Pergunta Direta (0-3s)\n"
+            "- 'hook_c': Gancho Estatística/Número Impactante (0-3s)\n"
+            "- 'narration': Texto principal de narração para o avatar ler em 23 segundos adicionais\n"
+            "- 'visual_prompts': Instruções passo a passo de edição visual/B-roll para cada segmento do vídeo\n"
+            "- 'caption': Legenda envolvente com hashtags de desporto US"
+        )
     },
-    "noticias_geral": {
-        "name": "Notícias & Atualidades",
-        "system_instruction": "És um apresentador e criador de conteúdos de notícias rápidas. O teu tom é direto, cativante e focado nos pontos principais."
+    "cozinha_saudavel": {
+        "name": "Healthy Cooking & Oil-Free Recipes",
+        "description": "Receitas saudáveis sem gordura e truques de air fryer com cortes dinâmicos.",
+        "system_instruction": (
+            "És um influenciador especialista em culinária saudável e sem gordura/óleo. "
+            "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "- 'hook_a': Gancho Dor/Problema (0-3s)\n"
+            "- 'hook_b': Gancho Sabor/Desejo sem Culpa (0-3s)\n"
+            "- 'hook_c': Gancho Rapidez/Praticidade (0-3s)\n"
+            "- 'narration': Passo a passo ou dica explicada de forma rápida para 23 segundos\n"
+            "- 'visual_prompts': Sugestões visuais de close-ups de comida, b-roll e textos na tela\n"
+            "- 'caption': Legenda explicativa com CTA e hashtags fit"
+        )
     },
-    "financas_negocios": {
-        "name": "Finanças & Empreendedorismo",
-        "system_instruction": "És um especialista em negócios e finanças pessoais. O teu tom é motivador, prático e focado em dicas acionáveis."
+    "tech_ai": {
+        "name": "Tech, AI & Automation",
+        "description": "Ferramentas de IA, automação e truques de produtividade em tempo recorde.",
+        "system_instruction": (
+            "És um especialista em tecnologia, IA e automações digitais. "
+            "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "- 'hook_a': Gancho Economia de Tempo (0-3s)\n"
+            "- 'hook_b': Gancho Revelação de Ferramenta Secreta (0-3s)\n"
+            "- 'hook_c': Gancho 'Pára de fazer isto manualmente' (0-3s)\n"
+            "- 'narration': Explicação direta da ferramenta/automação para ler em 23 segundos\n"
+            "- 'visual_prompts': Gravação de tela, animação de interface e b-roll de tecnologia\n"
+            "- 'caption': Legenda explicativa com hashtags de tecnologia/IA"
+        )
     },
-    "estilo_vida": {
-        "name": "Estilo de Vida & Curiosidades",
-        "system_instruction": "És um influenciador de estilo de vida e entretenimento. O teu tom é descontraído, divertido e altamente interativo."
+    "negocios_financas": {
+        "name": "Business, Money & Entrepreneurship",
+        "description": "Empreendedorismo, finanças pessoais e mentalidade de crescimento.",
+        "system_instruction": (
+            "És um mentor de negócios, finanças pessoais e investimentos. "
+            "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "- 'hook_a': Gancho Provocação Financeira (0-3s)\n"
+            "- 'hook_b': Gancho Erro Comum de Negócios (0-3s)\n"
+            "- 'hook_c': Gancho Estratégia de Rendimento (0-3s)\n"
+            "- 'narration': Conselho prático e direto para aplicação imediata em 23 segundos\n"
+            "- 'visual_prompts': Gráficos dinâmicos, estilo de vida, b-roll de escritório/foco\n"
+            "- 'caption': Legenda reflexiva com hashtags de negócios/finanças"
+        )
+    },
+    "arbitrage_deals": {
+        "name": "Central Arbitrage & Direct Sales (Oportunidades de Mercado)",
+        "description": "Motor central de arbitragem (odds, e-commerce, ofertas de conversão direta).",
+        "system_instruction": (
+            "És um especialista em arbitragem de mercado e anúncios de alta conversão (Direct Sales/UGC). "
+            "Cria um roteiro para vídeo de VENDAS/ARBITRAGEM calibrado para 26 SEGUNDOS (55 a 65 palavras). "
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "- 'hook_a': Gancho Urgência/Oportunidade Limitada (0-3s)\n"
+            "- 'hook_b': Gancho Economia/Margem de Lucro (0-3s)\n"
+            "- 'hook_c': Gancho Problema vs. Solução Imediata (0-3s)\n"
+            "- 'narration': Exposição clara do spread, vantagem do produto ou oferta em 23 segundos\n"
+            "- 'visual_prompts': Demonstração do produto/odds, transições de oferta, indicação da bio/link\n"
+            "- 'caption': Legenda com chamada de ação direta (CTA) para conversão/compra"
+        )
     }
 }
 
@@ -35,121 +93,43 @@ PERSONAS = {
 def index():
     return render_template("index.html", personas=PERSONAS)
 
-@app.route("/generate-comment", methods=["POST"])
-def generate_comment():
-    data = request.json or {}
-    text = data.get("text", "").strip()
-    persona_key = data.get("persona", "europa_benfica")
-
-    if not text:
-        return jsonify({"status": "error", "message": "Insira o texto da publicação!"}), 400
-
-    persona_info = PERSONAS.get(persona_key, PERSONAS["europa_benfica"])
-
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"""
-{persona_info['system_instruction']}
-
-Gera um comentário orgânico e natural em português para a seguinte publicação:
-"{text}"
-
-O comentário deve soar 100% humano, sem spam e com forte envolvimento.
-"""
-        response = model.generate_content(prompt)
-        return jsonify({"status": "success", "result": response.text})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
 @app.route("/generate-script", methods=["POST"])
 def generate_script():
-    """Gera roteiro otimizado para vídeos curtos (Reels/TikTok/Shorts)."""
-    data = request.json or {}
-    topic = data.get("topic", "").strip()
-    persona_key = data.get("persona", "europa_benfica")
-    duration_sec = data.get("duration", 30)
+    data = request.get_json()
+    persona_key = data.get("persona")
+    topic = data.get("topic")
 
-    if not topic:
-        return jsonify({"status": "error", "message": "Insira o tema do vídeo!"}), 400
+    if not persona_key or persona_key not in PERSONAS:
+        return jsonify({"status": "error", "message": "Opção inválida selecionada."}), 400
 
-    persona_info = PERSONAS.get(persona_key, PERSONAS["europa_benfica"])
+    if not topic or not topic.strip():
+        return jsonify({"status": "error", "message": "Por favor, insira um tema/oportunidade."}), 400
+
+    persona_info = PERSONAS[persona_key]
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"""
-{persona_info['system_instruction']}
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            generation_config={"response_mime_type": "application/json"}
+        )
 
-Cria um roteiro completo de vídeo curto ({duration_sec} segundos) sobre:
-"{topic}"
-
-Formata o resultado em JSON com as seguintes chaves:
-- "hook": frase inicial chamativa (primeiros 3 segundos)
-- "narration": texto de narração completo e fluido
-- "broll_suggestions": lista de sugestões de imagens/vídeos de fundo
-- "caption": legenda pronta para a publicação com hashtags
-"""
+        prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
         response = model.generate_content(prompt)
-        
-        # Limpeza rápida de tags markdown caso o Gemini devolva em formato ```json
-        raw_text = response.text.strip()
-        if raw_text.startswith("```json"):
-            raw_text = raw_text.replace("```json", "").replace("```", "").strip()
 
-        script_data = json.loads(raw_text)
-        return jsonify({"status": "success", "script": script_data})
-    except Exception as e:
-        # Resposta de salvaguarda caso a formatação estrita falhe
+        script_data = json.loads(response.text)
+
         return jsonify({
-            "status": "success", 
-            "script": {
-                "hook": "Atenção a isto!",
-                "narration": response.text if 'response' in locals() else "Erro ao gerar",
-                "broll_suggestions": ["Vídeo de fundo genérico"],
-                "caption": topic
-            }
-        })
-
-
-@app.route("/api/v1/trigger-automation", methods=["POST"])
-def trigger_automation():
-    """
-    Endpoint para Piloto Automático:
-    Recebe os dados, gera o roteiro e dispara o Webhook para a plataforma
-    de renderização de vídeo e publicação direta (Make / Ayrshare / InVideo).
-    """
-    data = request.json or {}
-    webhook_url = os.getenv("AUTOMATION_WEBHOOK_URL")
-    
-    if not webhook_url:
-        return jsonify({
-            "status": "error", 
-            "message": "AUTOMATION_WEBHOOK_URL não configurada nas variáveis do Render."
-        }), 400
-
-    # Invoca a geração de roteiro
-    topic = data.get("topic", "")
-    persona_key = data.get("persona", "europa_benfica")
-    
-    try:
-        # Envia a carga de dados (Payload) para o webhook de automação externa
-        payload = {
-            "source": "Avatarx.ai",
+            "status": "success",
             "persona": persona_key,
-            "topic": topic,
-            "timestamp": request.headers.get("X-Request-Timestamp", "")
-        }
-        
-        response = requests.post(webhook_url, json=payload, timeout=10)
-        return jsonify({
-            "status": "success", 
-            "message": "Automação disparada com sucesso!", 
-            "webhook_response": response.status_code
+            "script": script_data,
+            "target_duration": "26s"
         })
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
 
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Erro ao gerar roteiro: {str(e)}"
+        }), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
