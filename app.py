@@ -107,44 +107,27 @@ def generate_script():
 
     persona_info = PERSONAS[persona_key]
 
-    # Lista de modelos por ordem de prioridade
-    models_to_try = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
-    response_text = None
-    last_error = None
-
-    for model_name in models_to_try:
-        try:
-            model = genai.GenerativeModel(
-                model_name=model_name,
-                generation_config={"response_mime_type": "application/json"}
-            )
-            prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
-            res = model.generate_content(prompt)
-            if res and res.text:
-                response_text = res.text
-                break
-        except Exception as e:
-            last_error = e
-            continue
-
-    if not response_text:
-        return jsonify({
-            "status": "error",
-            "message": f"Erro ao gerar roteiro: {str(last_error)}"
-        }), 500
-
     try:
-        script_data = json.loads(response_text)
+        # Usa o modelo gemini-2.0-flash
+        model = genai.GenerativeModel(
+            model_name="gemini-2.0-flash",
+            generation_config={"response_mime_type": "application/json"}
+        )
+        prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
+        res = model.generate_content(prompt)
+
+        script_data = json.loads(res.text)
         return jsonify({
             "status": "success",
             "persona": persona_key,
             "script": script_data,
             "target_duration": "26s"
         })
-    except Exception as parse_err:
+
+    except Exception as e:
         return jsonify({
             "status": "error",
-            "message": f"Erro ao processar JSON: {str(parse_err)}"
+            "message": f"Erro ao gerar roteiro: {str(e)}"
         }), 500
 
 if __name__ == "__main__":
