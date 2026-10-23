@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVATARX.AI - Motor de Conteúdo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0b0f19;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #151b2b;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #3b82f6;
+            font-size: 24px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        select, textarea, button {
+            width: 100%;
+            margin-top: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        button {
+            margin-top: 20px;
+            background: #2563eb;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1f2937;
+            border-radius: 5px;
+            border-left: 4px solid #3b82f6;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AVATARX.AI</h1>
+        <div class="subtitle">Motor de Envolvimento & Conteúdo Orgânico</div>
+
+        <label for="persona">Selecione a Persona / Avatar:</label>
+        <select id="persona">
+            {% for key, p in personas.items() %}
+            <option value="{{ key }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="textInput">Publicação ou Tema:</label>
+        <textarea id="textInput" placeholder="Ex: Escreve o tema do vídeo ou cola o post aqui..."></textarea>
+
+        <button onclick="gerarConteudo()">Gerar Conteúdo / Roteiro</button>
+
+        <div id="resultBox" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function gerarConteudo() {
+            const persona = document.getElementById('persona').value;
+            const text = document.getElementById('textInput').value;
+            const resultBox = document.getElementById('resultBox');
+
+            if (!text.trim()) {
+                alert('Por favor, insere algum texto ou tema!');
+                return;
+            }
+
+            resultBox.style.display = 'block';
+            resultBox.innerText = 'A gerar conteúdo com IA...';
+
+            try {
+                const response = await fetch('/generate-script', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: text, persona: persona, duration: 30 })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const s = data.script;
+                    resultBox.innerHTML = `<strong>Gancho (Hook):</strong> ${s.hook}\n\n` +
+                                          `<strong>Narração:</strong> ${s.narration}\n\n` +
+                                          `<strong>Legenda:</strong> ${s.caption}`;
+                } else {
+                    resultBox.innerText = 'Erro: ' + data.message;
+                }
+            } catch (err) {
+                resultBox.innerText = 'Erro de ligação ao servidor.';
+            }
+        }
+    </script>
+</body>
+</html>
