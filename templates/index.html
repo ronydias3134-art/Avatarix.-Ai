@@ -3,128 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVATARX.AI - Motor de Conteúdo</title>
+    <title>AVATARX.AI - Central Engine</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0b0f19;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #151b2b;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        h1 {
-            text-align: center;
-            color: #3b82f6;
-            font-size: 24px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #9ca3af;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-        select, textarea, button {
-            width: 100%;
-            margin-top: 5px;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #374151;
-            background: #1f2937;
-            color: #fff;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        textarea {
-            resize: vertical;
-            height: 100px;
-        }
-        button {
-            margin-top: 20px;
-            background: #2563eb;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover {
-            background: #1d4ed8;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #1f2937;
-            border-radius: 5px;
-            border-left: 4px solid #3b82f6;
-            white-space: pre-wrap;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b1021; color: #f1f5f9; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 650px; background: #151c33; padding: 25px; border-radius: 12px; border: 1px solid #2a3558; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        h1 { text-align: center; color: #3b82f6; margin-bottom: 5px; font-size: 26px; font-weight: 800; }
+        p.subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
+        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: 600; color: #cbd5e1; font-size: 14px; }
+        select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #f8fafc; font-size: 14px; outline: none; }
+        select:focus, textarea:focus { border-color: #3b82f6; }
+        textarea { height: 100px; resize: vertical; }
+        button { width: 100%; margin-top: 20px; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+        #result-box { margin-top: 25px; display: none; background: #0f172a; padding: 18px; border-radius: 8px; border: 1px solid #1e293b; }
+        #result-box h3 { color: #10b981; margin-bottom: 10px; font-size: 16px; }
+        pre { background: #020617; padding: 12px; border-radius: 6px; overflow-x: auto; color: #38bdf8; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; }
+        .loading { text-align: center; color: #f59e0b; margin-top: 15px; display: none; font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>AVATARX.AI</h1>
-        <div class="subtitle">Motor de Envolvimento & Conteúdo Orgânico</div>
 
-        <label for="persona">Selecione a Persona / Avatar:</label>
-        <select id="persona">
-            {% for key, p in personas.items() %}
-            <option value="{{ key }}">{{ p.name }}</option>
-            {% endfor %}
-        </select>
+<div class="container">
+    <h1>AVATARX.AI</h1>
+    <p class="subtitle">Motor de Envolvimento & Conteúdo Orgânico</p>
 
-        <label for="textInput">Publicação ou Tema:</label>
-        <textarea id="textInput" placeholder="Ex: Escreve o tema do vídeo ou cola o post aqui..."></textarea>
+    <label for="persona">Selecione a Persona / Avatar:</label>
+    <select id="persona">
+        {% for key, info in personas.items() %}
+            <option value="{{ key }}">{{ info.name }}</option>
+        {% endfor %}
+    </select>
 
-        <button onclick="gerarConteudo()">Gerar Conteúdo / Roteiro</button>
+    <label for="topic">Publicação ou Tema:</label>
+    <textarea id="topic" placeholder="Ex: Escreve o tema do vídeo ou cola a oportunidade aqui..."></textarea>
 
-        <div id="resultBox" class="result" style="display: none;"></div>
+    <button id="btn-generate" onclick="generateScript()">Gerar Conteúdo / Roteiro</button>
+
+    <div id="loading" class="loading">⏳ A processar com o Gemini Flash...</div>
+
+    <div id="result-box">
+        <h3>Payload JSON Gerado com Sucesso:</h3>
+        <pre id="output-json"></pre>
     </div>
+</div>
 
-    <script>
-        async function gerarConteudo() {
-            const persona = document.getElementById('persona').value;
-            const text = document.getElementById('textInput').value;
-            const resultBox = document.getElementById('resultBox');
+<script>
+async function generateScript() {
+    const persona = document.getElementById("persona").value;
+    const topic = document.getElementById("topic").value;
+    const btn = document.getElementById("btn-generate");
+    const loading = document.getElementById("loading");
+    const resultBox = document.getElementById("result-box");
+    const outputJson = document.getElementById("output-json");
 
-            if (!text.trim()) {
-                alert('Por favor, insere algum texto ou tema!');
-                return;
-            }
+    if (!topic.trim()) {
+        alert("Por favor, insira um tema ou publicação!");
+        return;
+    }
 
-            resultBox.style.display = 'block';
-            resultBox.innerText = 'A gerar conteúdo com IA...';
+    btn.disabled = true;
+    loading.style.display = "block";
+    resultBox.style.display = "none";
 
-            try {
-                const response = await fetch('/generate-script', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ topic: text, persona: persona, duration: 30 })
-                });
+    try {
+        const response = await fetch("/generate-script", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ persona: persona, topic: topic })
+        });
 
-                const data = await response.json();
-                if (data.status === 'success') {
-                    const s = data.script;
-                    resultBox.innerHTML = `<strong>Gancho (Hook):</strong> ${s.hook}\n\n` +
-                                          `<strong>Narração:</strong> ${s.narration}\n\n` +
-                                          `<strong>Legenda:</strong> ${s.caption}`;
-                } else {
-                    resultBox.innerText = 'Erro: ' + data.message;
-                }
-            } catch (err) {
-                resultBox.innerText = 'Erro de ligação ao servidor.';
-            }
+        const data = await response.json();
+
+        if (data.status === "success") {
+            outputJson.textContent = JSON.stringify(data.script, null, 2);
+            resultBox.style.display = "block";
+        } else {
+            alert("Erro: " + data.message);
         }
-    </script>
+    } catch (err) {
+        alert("Erro ao comunicar com o servidor: " + err);
+    } finally {
+        btn.disabled = false;
+        loading.style.display = "none";
+    }
+}
+</script>
+
 </body>
 </html>
