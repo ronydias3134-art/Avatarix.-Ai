@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, render_template_string
 import google.generativeai as genai
 
 app = Flask(__name__)
@@ -23,7 +23,23 @@ Responde SEMPRE num objeto JSON estrito com as seguintes chaves:
 
 @app.route("/", methods=["GET"])
 def home():
-    return render_template("index.html")
+    # Tenta carregar pela pasta oficial de templates
+    try:
+        return render_template("index.html")
+    except Exception:
+        pass
+
+    # Se falhar, procura o index.html em qualquer pasta do repositório
+    try:
+        for root, dirs, files in os.walk("."):
+            if "index.html" in files:
+                path = os.path.join(root, "index.html")
+                with open(path, "r", encoding="utf-8") as f:
+                    return render_template_string(f.read())
+    except Exception as e:
+        return f"Erro ao carregar interface: {str(e)}", 500
+
+    return "Ficheiro index.html não foi encontrado no projeto.", 404
 
 @app.route("/gerar", methods=["POST"])
 def gerar():
