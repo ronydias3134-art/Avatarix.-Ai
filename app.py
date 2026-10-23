@@ -108,9 +108,9 @@ def generate_script():
     persona_info = PERSONAS[persona_key]
 
     try:
-        # Usa o modelo gemini-2.0-flash
+        # Atualizado para utilizar o modelo gemini-2.5-flash
         model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
+            model_name="gemini-2.5-flash",
             generation_config={"response_mime_type": "application/json"}
         )
         prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
