@@ -5,8 +5,8 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# Configuração da API do Gemini
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# Configuração da API do Gemini (suporta GEMINI_API_KEY ou GOOGLE_API_KEY)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
@@ -108,13 +108,22 @@ def generate_script():
     persona_info = PERSONAS[persona_key]
 
     try:
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config={"response_mime_type": "application/json"}
-        )
-
-        prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
-        response = model.generate_content(prompt)
+        # Tenta utilizar a versão padrão estável do Gemini Flash
+        try:
+            model = genai.GenerativeModel(
+                model_name="gemini-2.5-flash",
+                generation_config={"response_mime_type": "application/json"}
+            )
+            prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
+            response = model.generate_content(prompt)
+        except Exception:
+            # Fallback para alias alternativo caso a chave utilize o modelo flash padrão
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash-latest",
+                generation_config={"response_mime_type": "application/json"}
+            )
+            prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
+            response = model.generate_content(prompt)
 
         script_data = json.loads(response.text)
 
