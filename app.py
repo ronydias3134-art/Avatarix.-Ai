@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import google.generativeai as genai
 
 app = Flask(__name__)
@@ -23,11 +23,7 @@ Responde SEMPRE num objeto JSON estrito com as seguintes chaves:
 
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({
-        "status": "online",
-        "sistema": "Avatarx.ai API",
-        "mensagem": "Servidor ativo e pronto a processar requisições."
-    })
+    return render_template("index.html")
 
 @app.route("/gerar", methods=["POST"])
 def gerar():
