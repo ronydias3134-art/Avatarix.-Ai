@@ -107,27 +107,59 @@ def generate_script():
 
     persona_info = PERSONAS[persona_key]
 
+    # Lista inteligente: tenta primeiro detetar dinamicamente os modelos disponíveis na API
+    models_to_try = []
     try:
-        # Atualizado para utilizar o modelo gemini-2.5-flash
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            generation_config={"response_mime_type": "application/json"}
-        )
-        prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
-        res = model.generate_content(prompt)
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                clean_name = m.name.replace("models/", "")
+                if 'flash' in clean_name or 'pro' in clean_name:
+                    models_to_try.append(clean_name)
+    except Exception:
+        pass
 
-        script_data = json.loads(res.text)
+    # Adiciona a lista de segurança caso a listagem dinâmica venha vazia
+    fallback_models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+    for m in fallback_models:
+        if m not in models_to_try:
+            models_to_try.append(m)
+
+    response_text = None
+    last_error = None
+
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(
+                model_name=model_name,
+                generation_config={"response_mime_type": "application/json"}
+            )
+            prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
+            res = model.generate_content(prompt)
+            if res and res.text:
+                response_text = res.text
+                break
+        except Exception as e:
+            last_error = e
+            continue
+
+    if not response_text:
+        return jsonify({
+            "status": "error",
+            "message": f"Erro crítico: nenhum modelo Gemini compatível respondeu. Detalhe: {str(last_error)}"
+        }), 500
+
+    try:
+        script_data = json.loads(response_text)
         return jsonify({
             "status": "success",
             "persona": persona_key,
             "script": script_data,
             "target_duration": "26s"
         })
-
-    except Exception as e:
+    except Exception as parse_err:
         return jsonify({
             "status": "error",
-            "message": f"Erro ao gerar roteiro: {str(e)}"
+            "message": f"Erro ao processar JSON retornado pela IA: {str(parse_err)}"
         }), 500
 
 if __name__ == "__main__":
