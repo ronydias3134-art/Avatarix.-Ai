@@ -1,30 +1,30 @@
 import os
 import json
 from flask import Flask, render_template, request, jsonify
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 app = Flask(__name__)
 
-# Configuração da API do Gemini
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+# Configuração do cliente Gemini (usa GEMINI_API_KEY ou GOOGLE_API_KEY)
+api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+client = genai.Client(api_key=api_key) if api_key else genai.Client()
 
 # Prompts calibrados para 26 segundos (55-65 palavras) com A/B Hooks e B-Roll
 PERSONAS = {
-    "us_sports": {
-        "name": "US Sports & Culture (NFL, NBA, MLB)",
-        "description": "Análises vibrantes de desporto americano e destaques com múltiplos ganchos.",
+    "sports_global": {
+        "name": "Global Sports & Futebol (Champions, Premier League, La Liga, Liga Portugal, NBA, NFL)",
+        "description": "Análises vibrantes de futebol europeu, internacional e desportos americanos com múltiplos ganchos.",
         "system_instruction": (
-            "És um influenciador e especialista em desportos americanos (NBA, NFL, MLB). "
-            "Cria um roteiro para vídeo direcionado ao mercado americano calibrado para 26 SEGUNDOS (55 a 65 palavras). "
+            "És um influenciador e especialista em desporto rei e desportos americanos (incluindo Liga dos Campeões, Premier League, La Liga, Liga Portugal, NBA, NFL). "
+            "Cria um roteiro para vídeo de alta conversão calibrado para 26 SEGUNDOS (55 a 65 palavras). "
             "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
             "- 'hook_a': Gancho Curiosidade/Choque (0-3s)\n"
             "- 'hook_b': Gancho Pergunta Direta (0-3s)\n"
             "- 'hook_c': Gancho Estatística/Número Impactante (0-3s)\n"
             "- 'narration': Texto principal de narração para o avatar ler em 23 segundos adicionais\n"
             "- 'visual_prompts': Instruções passo a passo de edição visual/B-roll para cada segmento do vídeo\n"
-            "- 'caption': Legenda envolvente com hashtags de desporto US"
+            "- 'caption': Legenda envolvente com hashtags de futebol/desporto"
         )
     },
     "cozinha_saudavel": {
@@ -95,60 +95,49 @@ def index():
 
 @app.route("/generate-script", methods=["POST"])
 def generate_script():
-    data = request.get_json()
-    persona_key = data.get("persona")
-    topic = data.get("topic")
-
-    if not persona_key or persona_key not in PERSONAS:
-        return jsonify({"status": "error", "message": "Opção inválida selecionada."}), 400
-
-    if not topic or not topic.strip():
-        return jsonify({"status": "error", "message": "Por favor, insira um tema/oportunidade."}), 400
-
-    persona_info = PERSONAS[persona_key]
-
-    # Lista inteligente: tenta primeiro detetar dinamicamente os modelos disponíveis na API
-    models_to_try = []
     try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                clean_name = m.name.replace("models/", "")
-                if 'flash' in clean_name or 'pro' in clean_name:
-                    models_to_try.append(clean_name)
-    except Exception:
-        pass
+        data = request.get_json()
+        if not data:
+            return jsonify({"status": "error", "message": "Dados inválidos."}), 400
 
-    # Adiciona a lista de segurança caso a listagem dinâmica venha vazia
-    fallback_models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
-    for m in fallback_models:
-        if m not in models_to_try:
-            models_to_try.append(m)
+        persona_key = data.get("persona")
+        topic = data.get("topic")
 
-    response_text = None
-    last_error = None
+        if not persona_key or persona_key not in PERSONAS:
+            return jsonify({"status": "error", "message": "Opção inválida selecionada."}), 400
 
-    for model_name in models_to_try:
-        try:
-            model = genai.GenerativeModel(
-                model_name=model_name,
-                generation_config={"response_mime_type": "application/json"}
-            )
-            prompt = f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}"
-            res = model.generate_content(prompt)
-            if res and res.text:
-                response_text = res.text
-                break
-        except Exception as e:
-            last_error = e
-            continue
+        if not topic or not topic.strip():
+            return jsonify({"status": "error", "message": "Por favor, insira um tema/oportunidade."}), 400
 
-    if not response_text:
-        return jsonify({
-            "status": "error",
-            "message": f"Erro crítico: nenhum modelo Gemini compatível respondeu. Detalhe: {str(last_error)}"
-        }), 500
+        persona_info = PERSONAS[persona_key]
 
-    try:
+        # Modelos recomendados pela nova SDK oficial
+        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        response_text = None
+        last_error = None
+
+        for model_name in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}",
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json"
+                    ),
+                )
+                if response and response.text:
+                    response_text = response.text
+                    break
+            except Exception as e:
+                last_error = e
+                continue
+
+        if not response_text:
+            return jsonify({
+                "status": "error",
+                "message": f"Erro ao comunicar com a API do Gemini: {str(last_error)}"
+            }), 500
+
         script_data = json.loads(response_text)
         return jsonify({
             "status": "success",
@@ -156,10 +145,11 @@ def generate_script():
             "script": script_data,
             "target_duration": "26s"
         })
-    except Exception as parse_err:
+
+    except Exception as e:
         return jsonify({
             "status": "error",
-            "message": f"Erro ao processar JSON retornado pela IA: {str(parse_err)}"
+            "message": f"Erro interno no servidor: {str(e)}"
         }), 500
 
 if __name__ == "__main__":
