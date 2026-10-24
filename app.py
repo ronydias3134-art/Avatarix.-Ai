@@ -89,14 +89,16 @@ PERSONAS = {
 }
 
 def get_best_flash_model():
-    """Procura automaticamente o modelo flash disponível na conta para evitar erros 404."""
+    """Obtém o modelo Flash mais recente ativo na API."""
     try:
         for m in client.models.list():
-            if "flash" in m.name:
-                return m.name
-    except Exception:
-        pass
-    return "gemini-2.5-flash"
+            if "flash" in m.name.lower():
+                model_name = m.name.replace("models/", "")
+                return model_name
+    except Exception as e:
+        print(f"Erro ao listar modelos: {e}")
+    
+    return "gemini-1.5-flash"
 
 @app.route("/")
 def index():
