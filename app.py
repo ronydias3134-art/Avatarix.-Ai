@@ -2,27 +2,22 @@ import os
 import json
 import logging
 from flask import Flask, render_template, request, jsonify
-from google import genai
+import google.generativeai as genai
 
 # Configuração de Logging
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
-# ---------------------------------------------------------------------------
-# Configuração Segura do Cliente Gemini
-# ---------------------------------------------------------------------------
+# Configuração Segura da Chave Gemini
 api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 
-if not api_key:
+if api_key:
+    genai.configure(api_key=api_key)
+else:
     logging.error("ERRO CRÍTICO: Nenhuma variável GEMINI_API_KEY encontrada no Render!")
 
-# Injeção direta da chave no cliente
-client = genai.Client(api_key=api_key) if api_key else genai.Client()
-
-# ---------------------------------------------------------------------------
-# Definição das Personas (AvatarX.AI)
-# ---------------------------------------------------------------------------
+# Definição das Personas
 PERSONAS = {
     "leandro": {
         "name": "Leandro Dias",
@@ -56,9 +51,6 @@ PERSONAS = {
     }
 }
 
-# ---------------------------------------------------------------------------
-# Rotas do Flask
-# ---------------------------------------------------------------------------
 @app.route("/")
 def index():
     return render_template("index.html", personas=PERSONAS)
@@ -75,13 +67,12 @@ def generate():
 
         persona = PERSONAS.get(persona_key, PERSONAS["leandro"])
 
-        # Prompt estruturado forçando resposta JSON válida diretamente no texto
         prompt = f"""
 {persona['prompt_base']}
 
 Tema da Publicação: {topic}
 
-Responde EXCLUSIVAMENTE com um objeto JSON válido no seguinte formato (sem formatação markdown ```json ... ```):
+Responde EXCLUSIVAMENTE com um objeto JSON válido no seguinte formato (sem formatação markdown extra fora do JSON):
 {{
     "hook": "Uma frase de impacto inicial para prender a atenção em 3 segundos.",
     "body": "O desenvolvimento principal da análise/conteúdo em formato de roteiro falado.",
@@ -90,36 +81,21 @@ Responde EXCLUSIVAMENTE com um objeto JSON válido no seguinte formato (sem form
 }}
 """
 
-        models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
-        response_text = None
-        last_error = None
+        # Usar o modelo estável
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
 
-        for model_name in models_to_try:
-            try:
-                # Chamada direta e compatível com a biblioteca genai
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt
-                )
-                if response and response.text:
-                    response_text = response.text
-                    break
-            except Exception as err:
-                last_error = err
-                logging.warning(f"Falha ao usar o modelo {model_name}: {err}")
+        if not response or not response.text:
+            raise Exception("O Gemini não devolveu resposta.")
 
-        if not response_text:
-            raise Exception(f"Erro na conexão com o Gemini: {last_error}")
-
-        # Limpeza de potenciais marcadores markdown do texto
-        clean_text = response_text.replace("```json", "").replace("```", "").strip()
-        
-        # Conversão para JSON
+        # Limpeza de texto para garantir JSON perfeito
+        clean_text = response.text.replace("```json", "").replace("```", "").strip()
         result_json = json.loads(clean_text)
+        
         return jsonify(result_json)
 
     except Exception as e:
-        logging.error(f"Erro durante a geração: {e}")
+        logging.error(f"Erro no servidor: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
