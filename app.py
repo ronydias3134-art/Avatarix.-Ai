@@ -5,133 +5,126 @@ from flask import Flask, render_template, request, jsonify
 from google import genai
 from google.genai import types
 
-app = Flask(__name__)
+# Configuração de Logging
 logging.basicConfig(level=logging.INFO)
 
-# Inicializa o cliente lendo automaticamente a GEMINI_API_KEY do ambiente
-api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-client = genai.Client(api_key=api_key) if api_key else genai.Client()
+app = Flask(__name__)
 
+# ---------------------------------------------------------------------------
+# Configuração Segura do Cliente Gemini
+# ---------------------------------------------------------------------------
+api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+
+if not api_key:
+    logging.error("ERRO CRÍTICO: Nenhuma variável GEMINI_API_KEY encontrada no Render!")
+
+# Injeção direta da chave no cliente
+client = genai.Client(api_key=api_key)
+
+# ---------------------------------------------------------------------------
+# Definição das Personas (AvatarX.AI)
+# ---------------------------------------------------------------------------
 PERSONAS = {
-    "sport": {
-        "name": "Leandro Dias — Global & US Sports",
-        "system_instruction": (
-            "És o Leandro Dias, um influencer e especialista em futebol e desporto internacional. "
-            "Cria um roteiro de vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as chaves: "
-            "'hook_a', 'hook_b', 'hook_c', 'narration', 'visual_prompts', 'caption'. "
-            "A assinatura RD deve estar subtilmente sugerida na legenda."
-        )
+    "leandro": {
+        "name": "Leandro Dias",
+        "role": "Analista Desportivo e Entusiasta de Futebol",
+        "style": "Apasionado, analítico, direto e envolvente. Usa linguagem desportiva moderna.",
+        "prompt_base": "És o Leandro Dias, um influenciador e analista de futebol com opiniões fortes, análise tática precisa e paixão pelo jogo. Cria um roteiro vibrante sobre o tema."
     },
-    "cozinha_saudavel": {
-        "name": "Rafaela Dias — Healthy Cooking",
-        "system_instruction": (
-            "És a Rafaela Dias, especialista em culinária saudável e sem gordura. "
-            "Cria um roteiro de vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as chaves: "
-            "'hook_a', 'hook_b', 'hook_c', 'narration', 'visual_prompts', 'caption'. "
-            "A assinatura RD deve estar subtilmente sugerida na legenda."
-        )
+    "rafaela": {
+        "name": "Rafaela",
+        "role": "Criadora de Conteúdo e Lifestyle",
+        "style": "Empática, criativa, autêntica e comunicativa.",
+        "prompt_base": "És a Rafaela, uma criadora de conteúdo focada em tendências, comunicação digital e histórias reais."
     },
-    "tech_ai": {
-        "name": "Maia Dias — Tech & AI",
-        "system_instruction": (
-            "És a Maia Dias, especialista em tecnologia e ferramentas de IA. "
-            "Cria um roteiro de vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as chaves: "
-            "'hook_a', 'hook_b', 'hook_c', 'narration', 'visual_prompts', 'caption'. "
-            "A assinatura RD deve estar subtilmente sugerida na legenda."
-        )
+    "maia": {
+        "name": "Maia",
+        "role": "Especialista em Tecnologia e Futuro",
+        "style": "Visão de futuro, didática, precisa e inovadora.",
+        "prompt_base": "És a Maia, especialista em inteligência artificial, inovação e tecnologia do futuro."
     },
-    "negocios_financas": {
-        "name": "O Professor — Business & Money",
-        "system_instruction": (
-            "És O Professor, mentor de negócios, finanças pessoais e empreendedorismo. "
-            "Cria um roteiro de vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as chaves: "
-            "'hook_a', 'hook_b', 'hook_c', 'narration', 'visual_prompts', 'caption'. "
-            "A assinatura RD deve estar subtilmente sugerida na legenda."
-        )
+    "professor": {
+        "name": "O Professor",
+        "role": "Mentor de Negócios e Estratégia",
+        "style": "Sábio, estruturado, motivador e estratégico.",
+        "prompt_base": "És O Professor, focado em desenvolvimento pessoal, negócios e mentalidade de sucesso."
     },
-    "arbitrage_deals": {
-        "name": "Sérgio Dias — Central Arbitrage & Sales",
-        "system_instruction": (
-            "És o Sérgio Dias, especialista em arbitragem e vendas diretas. "
-            "Cria um roteiro de vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as chaves: "
-            "'hook_a', 'hook_b', 'hook_c', 'narration', 'visual_prompts', 'caption'. "
-            "A assinatura RD deve estar subtilmente sugerida na legenda."
-        )
+    "sergio": {
+        "name": "Sérgio",
+        "role": "Comentador de Atualidades e Cultura Pop",
+        "style": "Carismático, humorístico, crítico e dinâmico.",
+        "prompt_base": "És o Sérgio, perito em tendências da internet, cultura pop e grandes debates atuais."
     }
 }
 
+# ---------------------------------------------------------------------------
+# Rotas do Flask
+# ---------------------------------------------------------------------------
 @app.route("/")
 def index():
     return render_template("index.html", personas=PERSONAS)
 
-@app.route("/generate-script", methods=["POST"])
-def generate_script():
+@app.route("/generate", methods=["POST"])
+def generate():
     try:
         data = request.get_json() or {}
-        persona_key = data.get("persona")
-        topic = data.get("topic")
+        persona_key = data.get("persona", "leandro")
+        topic = data.get("topic", "")
 
-        if not persona_key or persona_key not in PERSONAS:
-            return jsonify({"status": "error", "message": "Por favor, seleciona um influencer válido."}), 400
+        if not topic:
+            return jsonify({"error": "Por favor, fornece um tema ou tópico para a publicação."}), 400
 
-        if not topic or not topic.strip():
-            return jsonify({"status": "error", "message": "Por favor, insira um tema ou tópico."}), 400
+        persona = PERSONAS.get(persona_key, PERSONAS["leandro"])
 
-        persona_info = PERSONAS[persona_key]
-        prompt = f"{persona_info['system_instruction']}\n\nTema do vídeo: {topic}"
+        # Prompt estruturado para resposta em JSON estrito
+        prompt = f"""
+{persona['prompt_base']}
 
-        # Tenta os dois modelos suportados
+Tema da Publicação: {topic}
+
+Gera um roteiro completo de conteúdo no seguinte formato JSON estrito:
+{{
+    "hook": "Uma frase de impacto inicial para prender a atenção em 3 segundos.",
+    "body": "O desenvolvimento principal da análise/conteúdo em formato de roteiro falado.",
+    "cta": "Uma chamada para ação (Call to Action) para gerar comentários e partilhas.",
+    "caption": "A legenda pronta para redes sociais com hashtags relevantes e terminando com a assinatura - RD."
+}}
+Apenas responde com o objeto JSON, sem formatação markdown extra fora do JSON.
+"""
+
+        # Tentar chamar o modelo principal e fallback se necessário
         models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
         response_text = None
         last_error = None
 
         for model_name in models_to_try:
             try:
-                res = client.models.generate_content(
+                response = client.models.generate_content(
                     model=model_name,
                     contents=prompt,
                     config=types.GenerateContentConfig(
-                        response_mime_type="application/json"
+                        response_mime_type="application/json",
+                        temperature=0.7
                     )
                 )
-                if res and res.text:
-                    response_text = res.text
+                response_text = response.text
+                if response_text:
                     break
-            except Exception as e:
-                logging.warning(f"Erro com {model_name}: {str(e)}")
-                last_error = e
+            except Exception as err:
+                last_error = err
+                logging.warning(f"Falha ao usar o modelo {model_name}: {err}")
 
         if not response_text:
-            return jsonify({
-                "status": "error",
-                "message": f"Erro na conexão com o Gemini: {str(last_error)}"
-            }), 500
+            raise Exception(f"Erro na conexão com o Gemini: {last_error}")
 
-        # Limpeza de marcadores Markdown caso existam
-        raw = response_text.strip()
-        if raw.startswith("```json"):
-            raw = raw[7:]
-        elif raw.startswith("```"):
-            raw = raw[3:]
-        if raw.endswith("```"):
-            raw = raw[:-3]
+        # Parsing do JSON retornado pelo Gemini
+        result_json = json.loads(response_text)
+        return jsonify(result_json)
 
-        parsed_json = json.loads(raw.strip())
-
-        return jsonify({
-            "status": "success",
-            "persona": persona_key,
-            "script": parsed_json
-        })
-
-    except Exception as err:
-        logging.error(f"Erro interno: {str(err)}")
-        return jsonify({"status": "error", "message": f"Falha ao processar: {str(err)}"}), 500
+    except Exception as e:
+        logging.error(f"Erro durante a geração: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
