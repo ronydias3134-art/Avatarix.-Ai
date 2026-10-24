@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
-# Configuração Segura da Chave Gemini
+# Configuração Segura da API Key
 api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 
 if api_key:
@@ -17,7 +17,7 @@ if api_key:
 else:
     logging.error("ERRO CRÍTICO: Nenhuma variável GEMINI_API_KEY encontrada no Render!")
 
-# Definição das Personas
+# Personas do AvatarX.AI
 PERSONAS = {
     "leandro": {
         "name": "Leandro Dias",
@@ -72,7 +72,7 @@ def generate():
 
 Tema da Publicação: {topic}
 
-Responde EXCLUSIVAMENTE com um objeto JSON válido no seguinte formato (sem formatação markdown extra fora do JSON):
+Responde EXCLUSIVAMENTE com um objeto JSON válido no seguinte formato (sem blocos de código ```json ... ```):
 {{
     "hook": "Uma frase de impacto inicial para prender a atenção em 3 segundos.",
     "body": "O desenvolvimento principal da análise/conteúdo em formato de roteiro falado.",
@@ -81,14 +81,12 @@ Responde EXCLUSIVAMENTE com um objeto JSON válido no seguinte formato (sem form
 }}
 """
 
-        # Usar o modelo estável
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
 
         if not response or not response.text:
-            raise Exception("O Gemini não devolveu resposta.")
+            raise Exception("Sem resposta do Gemini.")
 
-        # Limpeza de texto para garantir JSON perfeito
         clean_text = response.text.replace("```json", "").replace("```", "").strip()
         result_json = json.loads(clean_text)
         
