@@ -1,5 +1,18 @@
+import os
+import json
+from flask import Flask, render_template, request, jsonify
+from google import genai
+from google.genai import types
+
+app = Flask(__name__)
+
+# Configuração do cliente Gemini (usa GEMINI_API_KEY ou GOOGLE_API_KEY)
+api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+client = genai.Client(api_key=api_key) if api_key else genai.Client()
+
+# Prompts calibrados para 26 segundos (55-65 palavras) com A/B Hooks e B-Roll
 PERSONAS = {
-    "us_sports": {
+    "sport": {
         "name": "Global & US Sports (Champions, Premier League, Liga Portugal, NBA, NFL)",
         "description": "Análises vibrantes de futebol europeu, internacional e desportos americanos com múltiplos ganchos.",
         "system_instruction": (
@@ -75,3 +88,68 @@ PERSONAS = {
         )
     }
 }
+
+@app.route("/")
+def index():
+    return render_template("index.html", personas=PERSONAS)
+
+@app.route("/generate-script", methods=["POST"])
+def generate_script():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"status": "error", "message": "Dados inválidos."}), 400
+
+        persona_key = data.get("persona")
+        topic = data.get("topic")
+
+        if not persona_key or persona_key not in PERSONAS:
+            return jsonify({"status": "error", "message": "Opção inválida selecionada."}), 400
+
+        if not topic or not topic.strip():
+            return jsonify({"status": "error", "message": "Por favor, insira um tema/oportunidade."}), 400
+
+        persona_info = PERSONAS[persona_key]
+
+        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        response_text = None
+        last_error = None
+
+        for model_name in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}",
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json"
+                    ),
+                )
+                if response and response.text:
+                    response_text = response.text
+                    break
+            except Exception as e:
+                last_error = e
+                continue
+
+        if not response_text:
+            return jsonify({
+                "status": "error",
+                "message": f"Erro ao comunicar com a API do Gemini: {str(last_error)}"
+            }), 500
+
+        script_data = json.loads(response_text)
+        return jsonify({
+            "status": "success",
+            "persona": persona_key,
+            "script": script_data,
+            "target_duration": "26s"
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Erro interno no servidor: {str(e)}"
+        }), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
