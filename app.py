@@ -12,10 +12,10 @@ client = genai.Client(api_key=api_key) if api_key else genai.Client()
 
 PERSONAS = {
     "sport": {
-        "name": "Global & US Sports (Champions, Premier League, Liga Portugal, NBA, NFL)",
+        "name": "Leandro Dias — Global & US Sports (Champions, Premier League, NBA, NFL)",
         "description": "Análises vibrantes de futebol europeu, internacional e desportos americanos com múltiplos ganchos.",
         "system_instruction": (
-            "És um influencer e especialista em desporto rei e desportos americanos (incluindo Liga dos Campeões, Premier League, La Liga, Liga Portugal, NBA, NFL). "
+            "És o Leandro Dias, um influencer e especialista em desporto rei e desportos americanos (incluindo Liga dos Campeões, Premier League, La Liga, Liga Portugal, NBA, NFL). "
             "Cria um roteiro para vídeo de alta conversão calibrado para 26 SEGUNDOS (55 a 65 palavras). "
             "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional antes ou depois, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Curiosidade/Choque (0-3s)\n"
@@ -27,10 +27,10 @@ PERSONAS = {
         )
     },
     "cozinha_saudavel": {
-        "name": "Healthy Cooking & Oil-Free Recipes",
+        "name": "Rafaela Dias — Healthy Cooking & Oil-Free Recipes",
         "description": "Receitas saudáveis sem gordura e truques de air fryer com cortes dinâmicos.",
         "system_instruction": (
-            "És um influenciador especialista em culinária saudável e sem gordura/óleo. "
+            "És a Rafaela Dias, uma influenciadora especialista em culinária saudável e sem gordura/óleo. "
             "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
             "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Dor/Problema (0-3s)\n"
@@ -42,10 +42,10 @@ PERSONAS = {
         )
     },
     "tech_ai": {
-        "name": "Tech, AI & Automation",
+        "name": "Maia Dias — Tech, AI & Automation",
         "description": "Ferramentas de IA, automação e truques de produtividade em tempo recorde.",
         "system_instruction": (
-            "És um especialista em tecnologia, IA e automações digitais. "
+            "És a Maia Dias, uma especialista em tecnologia, IA e automações digitais. "
             "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
             "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Economia de Tempo (0-3s)\n"
@@ -57,10 +57,10 @@ PERSONAS = {
         )
     },
     "negocios_financas": {
-        "name": "Business, Money & Entrepreneurship",
+        "name": "O Professor — Business, Money & Entrepreneurship",
         "description": "Empreendedorismo, finanças pessoais e mentalidade de crescimento.",
         "system_instruction": (
-            "És um mentor de negócios, finanças pessoais e investimentos. "
+            "És O Professor, um mentor de negócios, finanças pessoais e investimentos. "
             "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
             "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Provocação Financeira (0-3s)\n"
@@ -72,10 +72,10 @@ PERSONAS = {
         )
     },
     "arbitrage_deals": {
-        "name": "Central Arbitrage & Direct Sales (Oportunidades de Mercado)",
+        "name": "Sérgio Dias — Central Arbitrage & Direct Sales (Oportunidades de Mercado)",
         "description": "Motor central de arbitragem (odds, e-commerce, ofertas de conversão direta).",
         "system_instruction": (
-            "És um especialista em arbitragem de mercado e anúncios de alta conversão (Direct Sales/UGC). "
+            "És o Sérgio Dias, um especialista em arbitragem de mercado e anúncios de alta conversão (Direct Sales/UGC). "
             "Cria um roteiro para vídeo de VENDAS/ARBITRAGEM calibrado para 26 SEGUNDOS (55 a 65 palavras). "
             "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Urgência/Oportunidade Limitada (0-3s)\n"
@@ -110,7 +110,7 @@ def generate_script():
 
         persona_info = PERSONAS[persona_key]
 
-        # Chamada direta e segura ao modelo oficial estável
+        # Chamada ao modelo oficial estável gemini-2.0-flash
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}",
@@ -125,7 +125,7 @@ def generate_script():
                 "message": "A API não retornou conteúdo."
             }), 500
 
-        # Tratamento seguro para limpar formatação markdown caso venha embrulhado
+        # Limpeza de blocos de código Markdown caso venham na resposta
         raw_text = response.text.strip()
         if raw_text.startswith("```json"):
             raw_text = raw_text[7:]
