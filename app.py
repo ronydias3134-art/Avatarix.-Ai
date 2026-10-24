@@ -17,7 +17,7 @@ PERSONAS = {
         "system_instruction": (
             "És um influencer e especialista em desporto rei e desportos americanos (incluindo Liga dos Campeões, Premier League, La Liga, Liga Portugal, NBA, NFL). "
             "Cria um roteiro para vídeo de alta conversão calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional antes ou depois, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Curiosidade/Choque (0-3s)\n"
             "- 'hook_b': Gancho Pergunta Direta (0-3s)\n"
             "- 'hook_c': Gancho Estatística/Número Impactante (0-3s)\n"
@@ -32,7 +32,7 @@ PERSONAS = {
         "system_instruction": (
             "És um influenciador especialista em culinária saudável e sem gordura/óleo. "
             "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Dor/Problema (0-3s)\n"
             "- 'hook_b': Gancho Sabor/Desejo sem Culpa (0-3s)\n"
             "- 'hook_c': Gancho Rapidez/Praticidade (0-3s)\n"
@@ -47,7 +47,7 @@ PERSONAS = {
         "system_instruction": (
             "És um especialista em tecnologia, IA e automações digitais. "
             "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Economia de Tempo (0-3s)\n"
             "- 'hook_b': Gancho Revelação de Ferramenta Secreta (0-3s)\n"
             "- 'hook_c': Gancho 'Pára de fazer isto manualmente' (0-3s)\n"
@@ -62,7 +62,7 @@ PERSONAS = {
         "system_instruction": (
             "És um mentor de negócios, finanças pessoais e investimentos. "
             "Cria um roteiro para vídeo calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Provocação Financeira (0-3s)\n"
             "- 'hook_b': Gancho Erro Comum de Negócios (0-3s)\n"
             "- 'hook_c': Gancho Estratégia de Rendimento (0-3s)\n"
@@ -77,7 +77,7 @@ PERSONAS = {
         "system_instruction": (
             "És um especialista em arbitragem de mercado e anúncios de alta conversão (Direct Sales/UGC). "
             "Cria um roteiro para vídeo de VENDAS/ARBITRAGEM calibrado para 26 SEGUNDOS (55 a 65 palavras). "
-            "Devolve EXCLUSIVAMENTE um objeto JSON válido com as seguintes chaves:\n"
+            "Devolve EXCLUSIVAMENTE um objeto JSON válido, sem texto adicional, com as seguintes chaves:\n"
             "- 'hook_a': Gancho Urgência/Oportunidade Limitada (0-3s)\n"
             "- 'hook_b': Gancho Economia/Margem de Lucro (0-3s)\n"
             "- 'hook_c': Gancho Problema vs. Solução Imediata (0-3s)\n"
@@ -87,18 +87,6 @@ PERSONAS = {
         )
     }
 }
-
-def get_best_flash_model():
-    """Obtém o modelo Flash mais recente ativo na API."""
-    try:
-        for m in client.models.list():
-            if "flash" in m.name.lower():
-                model_name = m.name.replace("models/", "")
-                return model_name
-    except Exception as e:
-        print(f"Erro ao listar modelos: {e}")
-    
-    return "gemini-1.5-flash"
 
 @app.route("/")
 def index():
@@ -121,10 +109,10 @@ def generate_script():
             return jsonify({"status": "error", "message": "Por favor, insira um tema/oportunidade."}), 400
 
         persona_info = PERSONAS[persona_key]
-        selected_model = get_best_flash_model()
 
+        # Chamada direta e segura ao modelo oficial estável
         response = client.models.generate_content(
-            model=selected_model,
+            model="gemini-2.0-flash",
             contents=f"{persona_info['system_instruction']}\n\nTema/Tópico/Oportunidade: {topic}",
             config=types.GenerateContentConfig(
                 response_mime_type="application/json"
@@ -137,7 +125,17 @@ def generate_script():
                 "message": "A API não retornou conteúdo."
             }), 500
 
-        script_data = json.loads(response.text)
+        # Tratamento seguro para limpar formatação markdown caso venha embrulhado
+        raw_text = response.text.strip()
+        if raw_text.startswith("```json"):
+            raw_text = raw_text[7:]
+        elif raw_text.startswith("```"):
+            raw_text = raw_text[3:]
+        if raw_text.endswith("```"):
+            raw_text = raw_text[:-3]
+        raw_text = raw_text.strip()
+
+        script_data = json.loads(raw_text)
         return jsonify({
             "status": "success",
             "persona": persona_key,
