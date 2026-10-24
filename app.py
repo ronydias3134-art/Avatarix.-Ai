@@ -3,7 +3,6 @@ import json
 import logging
 from flask import Flask, render_template, request, jsonify
 from google import genai
-from google.genai import types
 
 # Configuração de Logging
 logging.basicConfig(level=logging.INFO)
@@ -19,7 +18,7 @@ if not api_key:
     logging.error("ERRO CRÍTICO: Nenhuma variável GEMINI_API_KEY encontrada no Render!")
 
 # Injeção direta da chave no cliente
-client = genai.Client(api_key=api_key)
+client = genai.Client(api_key=api_key) if api_key else genai.Client()
 
 # ---------------------------------------------------------------------------
 # Definição das Personas (AvatarX.AI)
@@ -28,7 +27,7 @@ PERSONAS = {
     "leandro": {
         "name": "Leandro Dias",
         "role": "Analista Desportivo e Entusiasta de Futebol",
-        "style": "Apasionado, analítico, direto e envolvente. Usa linguagem desportiva moderna.",
+        "style": "Apoiado, analítico, direto e envolvente. Usa linguagem desportiva moderna.",
         "prompt_base": "És o Leandro Dias, um influenciador e analista de futebol com opiniões fortes, análise tática precisa e paixão pelo jogo. Cria um roteiro vibrante sobre o tema."
     },
     "rafaela": {
@@ -76,39 +75,34 @@ def generate():
 
         persona = PERSONAS.get(persona_key, PERSONAS["leandro"])
 
-        # Prompt estruturado para resposta em JSON estrito
+        # Prompt estruturado forçando resposta JSON válida diretamente no texto
         prompt = f"""
 {persona['prompt_base']}
 
 Tema da Publicação: {topic}
 
-Gera um roteiro completo de conteúdo no seguinte formato JSON estrito:
+Responde EXCLUSIVAMENTE com um objeto JSON válido no seguinte formato (sem formatação markdown ```json ... ```):
 {{
     "hook": "Uma frase de impacto inicial para prender a atenção em 3 segundos.",
     "body": "O desenvolvimento principal da análise/conteúdo em formato de roteiro falado.",
     "cta": "Uma chamada para ação (Call to Action) para gerar comentários e partilhas.",
     "caption": "A legenda pronta para redes sociais com hashtags relevantes e terminando com a assinatura - RD."
 }}
-Apenas responde com o objeto JSON, sem formatação markdown extra fora do JSON.
 """
 
-        # Tentar chamar o modelo principal e fallback se necessário
         models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
         response_text = None
         last_error = None
 
         for model_name in models_to_try:
             try:
+                # Chamada direta e compatível com a biblioteca genai
                 response = client.models.generate_content(
                     model=model_name,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        temperature=0.7
-                    )
+                    contents=prompt
                 )
-                response_text = response.text
-                if response_text:
+                if response and response.text:
+                    response_text = response.text
                     break
             except Exception as err:
                 last_error = err
@@ -117,8 +111,11 @@ Apenas responde com o objeto JSON, sem formatação markdown extra fora do JSON.
         if not response_text:
             raise Exception(f"Erro na conexão com o Gemini: {last_error}")
 
-        # Parsing do JSON retornado pelo Gemini
-        result_json = json.loads(response_text)
+        # Limpeza de potenciais marcadores markdown do texto
+        clean_text = response_text.replace("```json", "").replace("```", "").strip()
+        
+        # Conversão para JSON
+        result_json = json.loads(clean_text)
         return jsonify(result_json)
 
     except Exception as e:
