@@ -81,6 +81,13 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Secção 4: Orçamento e Exportação -->
+        <div class="card">
+            <h3 style="color: #4da6ff; margin-bottom: 10px;">📤 4. Exportar Projeto</h3>
+            <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 15px;">Gera um resumo formatado para enviar ao cliente ou parceiro:</p>
+            <button onclick="enviarWhatsApp()" style="background: #25d366; margin-top: 0;">Enviar por WhatsApp 📱</button>
+        </div>
     </div>
 
     <script>
@@ -201,6 +208,22 @@
         function removerItemTabela(index) {
             listaItensProjeto.splice(index, 1);
             atualizarTabelaMateriais();
+        }
+
+        function enviarWhatsApp() {
+            if (listaItensProjeto.length === 0) {
+                alert('A lista de materiais está vazia. Adiciona itens ou faz um desenho primeiro!');
+                return;
+            }
+
+            let texto = "🛠️ *Resumo do Projeto - Canalizar-te* 📐\n\n";
+            listaItensProjeto.forEach(item => {
+                texto += `- ${item.descricao}: *${item.quantidade}*\n`;
+            });
+            texto += "\nGerado via aplicação Canalizar-te 🚀";
+
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
         }
     </script>
 </body>
