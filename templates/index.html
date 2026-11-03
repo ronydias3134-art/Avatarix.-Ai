@@ -11,10 +11,11 @@
         h1 { text-align: center; color: #38b2f6; margin-bottom: 15px; font-size: 26px; font-weight: 800; }
         .subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
         label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: 600; color: #cbd5e1; font-size: 16px; }
-        select, textarea, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #f1f5f0; font-size: 16px; }
-        button { width: 100%; margin-top: 20px; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #f1f5f0; font-size: 16px; }
+        button { width: 100%; margin-top: 15px; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
         button:hover { background: #1d4ed8; }
         .card { background: #1e1e2f; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-top: 20px; }
+        .metric-box { background: #0f172a; padding: 10px; border-radius: 6px; margin-top: 10px; text-align: center; color: #38b2f6; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -31,14 +32,54 @@
             <option value="PEAD">PEAD (Adução / Exterior)</option>
         </select>
 
+        <label for="diametro-tubo">📏 Diâmetro do Tubo:</label>
+        <select id="diametro-tubo">
+            <option value="20">20 mm</option>
+            <option value="25">25 mm</option>
+            <option value="32">32 mm</option>
+            <option value="50">50 mm</option>
+            <option value="110">110 mm (Esgoto)</option>
+        </select>
+
         <!-- Secção 2: Esboço Tátil do Projeto de Canalização -->
         <div class="card">
-            <h3 style="color: #4da6ff; margin-bottom: 10px;">📐 2. Esboço do Projeto Hidráulico</h3>
-            <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 10px;">Usa o dedo para desenhar a rede de tubagem:</p>
+            <h3 style="color: #4da6ff; margin-bottom: 10px;">📐 2. Esboço e Cálculo de Metragem</h3>
+            <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 10px;">Desenha a linha da tubagem no quadro:</p>
             
-            <canvas id="meuCanvas" width="350" height="220" style="border: 2px dashed #4da6ff; background: #fff; width: 100%; border-radius: 6px; touch-action: none;"></canvas>
+            <canvas id="meuCanvas" width="350" height="200" style="border: 2px dashed #4da6ff; background: #fff; width: 100%; border-radius: 6px; touch-action: none;"></canvas>
             
-            <button onclick="limparCanvas()" style="background-color: #d9534f; margin-top: 10px;">Limpar Desenho</button>
+            <div class="metric-box" id="resultado-metragem">Comprimento Estimado: 0.0 metros</div>
+            
+            <button onclick="limparCanvas()" style="background-color: #d9534f;">Limpar Desenho</button>
+        </div>
+
+        <!-- Secção 3: Lista de Materiais e Acessórios -->
+        <div class="card">
+            <h3 style="color: #4da6ff; margin-bottom: 10px;">📋 3. Lista de Materiais e Acessórios</h3>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <select id="acessorio-tipo" style="flex: 2;">
+                    <option value="Joelho 90º">Joelho 90º</option>
+                    <option value="Te Hidráulico">Te Hidráulico</option>
+                    <option value="Válvula de Corte">Válvula de Corte</option>
+                    <option value="União / Adaptador">União / Adaptador</option>
+                </select>
+                <input type="number" id="acessorio-qtd" value="1" style="flex: 1; text-align: center;">
+                <button onclick="adicionarAcessorio()" style="flex: 1; margin-top: 0; background: #28a745;">Adicionar</button>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; color: #fff;">
+                <thead>
+                    <tr style="background: #0f172a; text-align: left;">
+                        <th style="padding: 8px; border: 1px solid #334155;">Item / Descrição</th>
+                        <th style="padding: 8px; border: 1px solid #334155;">Qtd / Mts</th>
+                        <th style="padding: 8px; border: 1px solid #334155; width: 50px;">Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela-materiais">
+                    <!-- Os itens aparecem aqui -->
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -46,13 +87,17 @@
         const canvas = document.getElementById('meuCanvas');
         const ctx = canvas.getContext('2d');
         let desenhando = false;
+        let ultimaPosX = 0;
+        let ultimaPosY = 0;
+        let pixelsTotais = 0;
+        const FATOR_ESCALA_PIXEL_METRO = 50; 
 
-        // Suporte a Telemóvel (Toque)
+        let listaItensProjeto = [];
+
         canvas.addEventListener('touchstart', iniciarDesenho, { passive: false });
         canvas.addEventListener('touchmove', desenhar, { passive: false });
         canvas.addEventListener('touchend', pararDesenho);
 
-        // Suporte a Computador (Rato)
         canvas.addEventListener('mousedown', iniciarDesenho);
         canvas.addEventListener('mousemove', desenhar);
         canvas.addEventListener('mouseup', pararDesenho);
@@ -71,6 +116,8 @@
             e.preventDefault();
             desenhando = true;
             const pos = obterPosicao(e);
+            ultimaPosX = pos.x;
+            ultimaPosY = pos.y;
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
         }
@@ -79,19 +126,81 @@
             if (!desenhando) return;
             e.preventDefault();
             const pos = obterPosicao(e);
+            
             ctx.lineTo(pos.x, pos.y);
             ctx.strokeStyle = '#0056b3';
             ctx.lineWidth = 4;
             ctx.lineCap = 'round';
             ctx.stroke();
+
+            const distanciaSegmento = Math.hypot(pos.x - ultimaPosX, pos.y - ultimaPosY);
+            pixelsTotais += distanciaSegmento;
+            ultimaPosX = pos.x;
+            ultimaPosY = pos.y;
+
+            let metrosReais = (pixelsTotais / FATOR_ESCALA_PIXEL_METRO).toFixed(1);
+            document.getElementById('resultado-metragem').innerText = `Comprimento Estimado: ${metrosReais} metros`;
         }
 
         function pararDesenho() {
             desenhando = false;
+            if (pixelsTotais > 0) {
+                let metrosReais = (pixelsTotais / FATOR_ESCALA_PIXEL_METRO).toFixed(1);
+                let tipoMat = document.getElementById('material-tipo').value;
+                let diametro = document.getElementById('diametro-tubo').value;
+                
+                listaItensProjeto.push({
+                    descricao: `Tubo ${tipoMat} (${diametro}mm)`,
+                    quantidade: `${metrosReais} m`
+                });
+                atualizarTabelaMateriais();
+            }
         }
 
         function limparCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pixelsTotais = 0;
+            document.getElementById('resultado-metragem').innerText = `Comprimento Estimado: 0.0 metros`;
+        }
+
+        function atualizarTabelaMateriais() {
+            const corpoTabela = document.getElementById('corpo-tabela-materiais');
+            corpoTabela.innerHTML = '';
+
+            listaItensProjeto.forEach((item, index) => {
+                const linha = document.createElement('tr');
+                linha.innerHTML = `
+                    <td style="padding: 8px; border: 1px solid #334155;">${item.descricao}</td>
+                    <td style="padding: 8px; border: 1px solid #334155;">${item.quantidade}</td>
+                    <td style="padding: 8px; border: 1px solid #334155; text-align: center;">
+                        <button onclick="removerItemTabela(${index})" style="background: #dc3545; padding: 4px 8px; margin: 0; font-size: 0.8rem; width: auto;">X</button>
+                    </td>
+                `;
+                corpoTabela.appendChild(linha);
+            });
+        }
+
+        function adicionarAcessorio() {
+            const tipoAcessorio = document.getElementById('acessorio-tipo').value;
+            const diametro = document.getElementById('diametro-tubo').value;
+            const quantidade = document.getElementById('acessorio-qtd').value;
+
+            if (quantidade <= 0) {
+                alert('Insere uma quantidade válida!');
+                return;
+            }
+
+            listaItensProjeto.push({
+                descricao: `${tipoAcessorio} (${diametro}mm)`,
+                quantidade: `${quantidade} un`
+            });
+
+            atualizarTabelaMateriais();
+        }
+
+        function removerItemTabela(index) {
+            listaItensProjeto.splice(index, 1);
+            atualizarTabelaMateriais();
         }
     </script>
 </body>
