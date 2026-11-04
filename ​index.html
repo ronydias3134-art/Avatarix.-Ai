@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatarix Engine V9 — Autonomous Pure-Digital Ecosystem</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        emerald: {
+                            500: '#10b981',
+                            600: '#059669',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white custom-scrollbar">
+
+    <!-- TOP BAR / INSTITUTIONAL HEADER -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-brand-500/20">
+                    A
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-lg tracking-tight text-white">AVATARIX <span class="text-xs bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full font-mono">V9 ENTERPRISE</span></span>
+                    </div>
+                    <p class="text-xs text-slate-400">Autonomous Digital Suite & Zero-Faults Multi-Drawer Engine</p>
+                </div>
+            </div>
+
+            <!-- CHANCELA INSTITUCIONAL RD & CAMBIO CVE -->
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center space-x-2 bg-slate-800/80 border border-slate-700/60 px-3 py-1.5 rounded-lg text-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-slate-300 font-medium">Chancela:</span>
+                    <span class="font-bold text-brand-400 tracking-wide">RD APPROVED</span>
+                </div>
+                <div class="text-right text-xs">
+                    <span class="text-slate-400 block">Câmbio Fixo CVE</span>
+                    <span class="font-mono text-emerald-400 font-semibold">1 EUR = 110.265 CVE</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6">
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="w-full md:w-64 flex-shrink-0 space-y-4">
+            <div class="text-xs font-semibold uppercase text-slate-500 px-3 tracking-wider">Gavetas Pure-Digital</div>
+            <nav class="space-y-1" id="navContainer">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn active w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-brand-600 text-white shadow-md shadow-brand-600/20">
+                    <i class="fa-solid fa-chart-line w-5"></i>
+                    <span>Dashboard Central</span>
+                </button>
+                <button onclick="switchTab('avatarix')" id="btn-avatarix" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+                    <i class="fa-solid fa-robot w-5"></i>
+                    <span>Avatarix AI Engine</span>
+                </button>
+                <button onclick="switchTab('evergreen')" id="btn-evergreen" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+                    <i class="fa-solid fa-box-open w-5"></i>
+                    <span>Catálogo Evergreen</span>
+                </button>
+                <button onclick="switchTab('gaming')" id="btn-gaming" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+                    <i class="fa-solid fa-gamepad w-5"></i>
+                    <span>Gaming & Sports</span>
+                </button>
+                <button onclick="switchTab('b2b')" id="btn-b2b" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+                    <i class="fa-solid fa-diagram-project w-5"></i>
+                    <span>Flow B2B & Agrotech</span>
+                </button>
+                <button onclick="switchTab('highmargin')" id="btn-highmargin" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+                    <i class="fa-solid fa-fire w-5 text-rose-400"></i>
+                    <span>High-Margin Traffic</span>
+                </button>
+                <button onclick="switchTab('financial')" id="btn-financial" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+                    <i class="fa-solid fa-wallet w-5"></i>
+                    <span>Faturação (EUR / CVE)</span>
+                </button>
+                <button onclick="switchTab('deploy')" id="btn-deploy" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+                    <i class="fa-solid fa-cloud-arrow-up w-5 text-indigo-400"></i>
+                    <span>Deploy & Config</span>
+                </button>
+            </nav>
+
+            <!-- CARD DA FROTA VIRTUAL -->
+            <div class="pt-2">
+                <div class="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-400 font-medium">Frota Virtual</span>
+                        <span class="font-bold text-emerald-400">200 Nós Ativos</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-gradient-to-r from-brand-500 to-emerald-400 h-full w-full"></div>
+                    </div>
+                    <div class="text-[11px] text-slate-400 flex justify-between font-mono">
+                        <span>Cadência Diária:</span>
+                        <span class="text-slate-200">600–1.000 vids</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT VIEWS SECTION -->
+        <main class="flex-1 space-y-6">
+
+            <!-- TAB 1: DASHBOARD CENTRAL -->
+            <section id="tab-dashboard" class="space-y-6">
+                <!-- METRIC CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800">
+                        <div class="text-slate-400 text-xs font-medium">Publicações Diárias</div>
+                        <div class="text-2xl font-bold text-white mt-1 font-mono">600 – 1.000</div>
+                        <div class="text-xs text-emerald-400 mt-1 flex items-center">
+                            <i class="fa-solid fa-arrow-trend-up mr-1"></i> 200 Perfis Automatizados
+                        </div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800">
+                        <div class="text-slate-400 text-xs font-medium">Impressões Mensais</div>
+                        <div class="text-2xl font-bold text-white mt-1 font-mono">18M – 50M</div>
+                        <div class="text-xs text-brand-400 mt-1">Tráfego Orgânico em Escala</div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800">
+                        <div class="text-slate-400 text-xs font-medium">Faturação Acumulada (6 Meses)</div>
+                        <div class="text-2xl font-bold text-emerald-400 mt-1 font-mono">39.525 €</div>
+                        <div class="text-xs text-slate-400 mt-1 font-mono">≈ 4.358.224 CVE</div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800">
+                        <div class="text-slate-400 text-xs font-medium">Custo de Infraestrutura</div>
+                        <div class="text-2xl font-bold text-white mt-1 font-mono">0.00 €</div>
+                        <div class="text-xs text-emerald-400 mt-1">Kokoro-82M + Cloudflare R2</div>
+                    </div>
+                </div>
+
+                <!-- ECOSYSTEM OVERVIEW PANEL -->
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-shield-halved text-brand-500 mr-2.5"></i> Estado da Arquitetura Autónoma (Zero-Faults Protocol)
+                        </h3>
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-1 rounded-full font-mono font-medium">Pronto para Deploy</span>
+                    </div>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        O ecossistema opera de forma puramente digital e estanque. A esteira de automação processa tarefas em background via Supabase em <code class="bg-slate-800 px-1.5 py-0.5 rounded text-brand-300">Transaction Mode</code> com locks atómicos <code class="bg-slate-800 px-1.5 py-0.5 rounded text-brand-300">FOR UPDATE SKIP LOCKED</code>, eliminando conflitos de concorrência.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <div class="font-semibold text-sm text-white mb-1">Evasão & Anti-Shadowban</div>
+                            <p class="text-xs text-slate-400">Sticky Sessions de 24h com rotação de IPs residenciais dedicados e Chromium Anti-Proxy Leak ativo.</p>
+                        </div>
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <div class="font-semibold text-sm text-white mb-1">Síntese Vocal Local</div>
+                            <p class="text-xs text-slate-400">Motor Kokoro-82M (&lt;350MB) com latência ultrarrápida de 22-75ms e custo zero por caractere.</p>
+                        </div>
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <div class="font-semibold text-sm text-white mb-1">Brand Safety & Moderation</div>
+                            <p class="text-xs text-slate-400">Auditoria automatizada pré-publicação via Llama Guard 3 para salvaguarda da chancela RD Approved.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIMULADOR DE PIPELINE AUTOMÁTICO DA FROTA -->
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-white text-base flex items-center">
+                            <i class="fa-solid fa-terminal text-emerald-400 mr-2"></i> Monitor de Execução da Frota em Tempo Real
+                        </h4>
+                        <button onclick="runPipelineSimulation()" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all shadow-md">
+                            <i class="fa-solid fa-play mr-1"></i> Simular Disparo Autónomo
+                        </button>
+                    </div>
+                    <div id="pipelineLogs" class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
+                        <div class="text-slate-500">[SYSTEM READY] Agendador pg_cron ativo. A aguardar início de lote de 200 perfis...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: AVATARIX ENGINE -->
+            <section id="tab-avatarix" class="space-y-6 hidden">
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Avatarix AI Engine — Matriz dos 4 Nichos Operacionais</h3>
+                        <p class="text-sm text-slate-400">Frota escalada de 200 perfis autónomos (50 criadores virtuais por nicho).</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm text-white">Nicho 01: Mecânica & Scooters</span>
+                                <span class="text-xs bg-emerald-500/20 text-emerald-400 font-mono px-2.5 py-0.5 rounded-full">50 Perfis Ativos</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Manutenção, guias práticos e dicas mecânicas com CTA direto para e-books do Catálogo Evergreen.</p>
+                            <div class="text-[11px] text-slate-500 font-mono pt-1">Cadência: 150–250 conteúdos/dia</div>
+                        </div>
+
+                        <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm text-white">Nicho 02: Finanças Pessoais</span>
+                                <span class="text-xs bg-emerald-500/20 text-emerald-400 font-mono px-2.5 py-0.5 rounded-full">50 Perfis Ativos</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Educação financeira, investimento e hábitos de poupança com conversão para templates de gestão.</p>
+                            <div class="text-[11px] text-slate-500 font-mono pt-1">Cadência: 150–250 conteúdos/dia</div>
+                        </div>
+
+                        <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm text-white">Nicho 03: Desportos (Canal Leandro Dias)</span>
+                                <span class="text-xs bg-indigo-500/20 text-indigo-400 font-mono px-2.5 py-0.5 rounded-full">50 Perfis Ativos</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Análises táticas, momentos desportivos e futebol ao vivo sob nossa tutela de infraestrutura.</p>
+                            <div class="text-[11px] text-slate-500 font-mono pt-1">Cadência: 150–250 conteúdos/dia</div>
+                        </div>
+
+                        <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm text-white">Nicho 04: Turismo & Viagens</span>
+                                <span class="text-xs bg-emerald-500/20 text-emerald-400 font-mono px-2.5 py-0.5 rounded-full">50 Perfis Ativos</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Roteiros turísticos, destinos paradisíacos e guias práticos de viagem com conversão para afiliados.</p>
+                            <div class="text-[11px] text-slate-500 font-mono pt-1">Cadência: 150–250 conteúdos/dia</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: CATÁLOGO EVERGREEN -->
+            <section id="tab-evergreen" class="space-y-6 hidden">
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Catálogo de 100 Produtos Digitais Evergreen</h3>
+                        <p class="text-sm text-slate-400">Matriz perpétua de produtos digitais com 100% de margem de lucro.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="text-brand-400 font-bold text-xs uppercase tracking-wider">Pilar 1 (25 Produtos)</div>
+                            <div class="font-bold text-white text-sm">Produtividade & Organização</div>
+                            <p class="text-xs text-slate-400">Templates Notion, dashboards financeiros e rastreadores de hábitos.</p>
+                        </div>
+
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="text-brand-400 font-bold text-xs uppercase tracking-wider">Pilar 2 (25 Produtos)</div>
+                            <div class="font-bold text-white text-sm">Marketing & Digital Assets</div>
+                            <p class="text-xs text-slate-400">Kits de design, modelos de copywriting e pacotes de e-mail marketing.</p>
+                        </div>
+
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="text-brand-400 font-bold text-xs uppercase tracking-wider">Pilar 3 (25 Produtos)</div>
+                            <div class="font-bold text-white text-sm">IA & Automação Tech</div>
+                            <p class="text-xs text-slate-400">Bibliotecas de prompts avançados, scripts operacionais e playbooks no-code.</p>
+                        </div>
+
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="text-brand-400 font-bold text-xs uppercase tracking-wider">Pilar 4 (25 Produtos)</div>
+                            <div class="font-bold text-white text-sm">Saúde & Conhecimento</div>
+                            <p class="text-xs text-slate-400">Manuais de bem-estar, rotinas de sono e guias práticos de desenvolvimento.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: GAMING & SPORTS -->
+            <section id="tab-gaming" class="space-y-6 hidden">
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Avatarix Gaming & Live Sports Engine</h3>
+                        <p class="text-sm text-slate-400">Monetização por tempo de sessão e anúncios premiados em HTML5.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-3">
+                            <div class="font-bold text-white flex items-center justify-between">
+                                <span>Portal de Jogos Web (HTML5)</span>
+                                <i class="fa-solid fa-gamepad text-emerald-400"></i>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Mini-jogos casuais servidos via CDN Edge sem custos de servidor. Monetizados por tempo de sessão e Rewarded Ads.</p>
+                        </div>
+
+                        <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-3">
+                            <div class="font-bold text-white flex items-center justify-between">
+                                <span>Hub de Futebol & Desporto Ao Vivo</span>
+                                <i class="fa-solid fa-futbol text-indigo-400"></i>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Transmissões desportivas integradas com a audiência do Nicho 03 (Leandro Dias), capturando tráfego massivo.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: B2B & AGROTECH -->
+            <section id="tab-b2b" class="space-y-6 hidden">
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Flow B2B & Agrotech Suite Digital</h3>
+                        <p class="text-sm text-slate-400">Licenciamento de automação de software em nuvem para PMEs.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="font-bold text-white text-sm">Flow B2B Automation</div>
+                            <p class="text-xs text-slate-400">Workflows de integração de sistemas e processamento autónomo de documentos.</p>
+                        </div>
+
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="font-bold text-white text-sm">Agrotech Software Suite</div>
+                            <p class="text-xs text-slate-400">Ferramentas digitais para cálculo de fertirrigação e planeamento agrícola em nuvem.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: HIGH-MARGIN TRAFFIC -->
+            <section id="tab-highmargin" class="space-y-6 hidden">
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">High-Margin Traffic & Adult Entertainment Engine</h3>
+                            <p class="text-sm text-slate-400">Gaveta estanque de captura de tráfego de alta margem líquida.</p>
+                        </div>
+                        <span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs px-2.5 py-1 rounded-full font-bold">Gaveta Isolada</span>
+                    </div>
+
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-3">
+                        <div class="text-sm font-semibold text-slate-200">Isolamento de Brand Safety & CORS Null</div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Gaveta totalmente estanque com política estrita de cabeçalhos <code class="text-rose-400">Access-Control-Allow-Origin: null</code>. Todo o tráfego e conversão de afiliação são processados sem qualquer ligação com a chancela institucional RD.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: CONTROLO FINANCEIRO -->
+            <section id="tab-financial" class="space-y-6 hidden">
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Módulo de Controlo Financeiro & Projeção de Faturação</h3>
+                            <p class="text-sm text-slate-400">Faturação líquida estimada nos primeiros 6 meses (EUR / CVE).</p>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800 text-xs font-mono">
+                            <span class="text-slate-400 px-2">Taxa Fixa:</span>
+                            <span class="text-emerald-400 font-bold">1€ = 110.265 CVE</span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 uppercase font-mono border-b border-slate-800">
+                                <tr>
+                                    <th class="px-4 py-3">Mês</th>
+                                    <th class="px-4 py-3">Fase Operacional</th>
+                                    <th class="px-4 py-3">Bruto (€)</th>
+                                    <th class="px-4 py-3">Margem</th>
+                                    <th class="px-4 py-3">Líquido (€)</th>
+                                    <th class="px-4 py-3">Líquido em Escudos (CVE)</th>
+                                    <th class="px-4 py-3">Destino dos Fundos</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 font-mono">
+                                <tr class="hover:bg-slate-900/50">
+                                    <td class="px-4 py-3 font-bold text-white">Mês 1</td>
+                                    <td class="px-4 py-3">Arranque & Piloto</td>
+                                    <td class="px-4 py-3">1.000,00 €</td>
+                                    <td class="px-4 py-3 text-emerald-400">40%</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">400,00 €</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">44.106,00 CVE</td>
+                                    <td class="px-4 py-3 text-slate-400">100% Reinvestido (Infra)</td>
+                                </tr>
+                                <tr class="hover:bg-slate-900/50">
+                                    <td class="px-4 py-3 font-bold text-white">Mês 2</td>
+                                    <td class="px-4 py-3">Escala (50 Perfis)</td>
+                                    <td class="px-4 py-3">2.800,00 €</td>
+                                    <td class="px-4 py-3 text-emerald-400">40%</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">1.120,00 €</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">123.496,80 CVE</td>
+                                    <td class="px-4 py-3 text-slate-400">100% Reinvestido (Reserva)</td>
+                                </tr>
+                                <tr class="hover:bg-slate-900/50">
+                                    <td class="px-4 py-3 font-bold text-white">Mês 3</td>
+                                    <td class="px-4 py-3">Tração (100 Perfis)</td>
+                                    <td class="px-4 py-3">6.200,00 €</td>
+                                    <td class="px-4 py-3 text-emerald-400">40%</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">2.480,00 €</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">273.457,20 CVE</td>
+                                    <td class="px-4 py-3 text-slate-400">100% Reinvestido (Pré-NIF)</td>
+                                </tr>
+                                <tr class="hover:bg-slate-900/50">
+                                    <td class="px-4 py-3 font-bold text-white">Mês 4</td>
+                                    <td class="px-4 py-3">Monetização Multi-Fluxo</td>
+                                    <td class="px-4 py-3">12.500,00 €</td>
+                                    <td class="px-4 py-3 text-emerald-400">45%</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">5.625,00 €</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">620.240,63 CVE</td>
+                                    <td class="px-4 py-3 text-indigo-400">Pós-NIF: 85% Dividendos</td>
+                                </tr>
+                                <tr class="hover:bg-slate-900/50">
+                                    <td class="px-4 py-3 font-bold text-white">Mês 5</td>
+                                    <td class="px-4 py-3">Expansão de Tráfego</td>
+                                    <td class="px-4 py-3">22.000,00 €</td>
+                                    <td class="px-4 py-3 text-emerald-400">45%</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">9.900,00 €</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">1.091.623,50 CVE</td>
+                                    <td class="px-4 py-3 text-indigo-400">15% Maint / 85% Dividendos</td>
+                                </tr>
+                                <tr class="hover:bg-slate-900/50 bg-slate-900/30">
+                                    <td class="px-4 py-3 font-bold text-white">Mês 6</td>
+                                    <td class="px-4 py-3">Capacidade Plena (200 Perfis)</td>
+                                    <td class="px-4 py-3">40.000,00 €</td>
+                                    <td class="px-4 py-3 text-emerald-400">50%</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">20.000,00 €</td>
+                                    <td class="px-4 py-3 font-bold text-emerald-400">2.205.300,00 CVE</td>
+                                    <td class="px-4 py-3 text-indigo-400">15% Maint / 85% Dividendos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div>
+                            <span class="text-xs text-slate-300 block">Faturação Líquida Total Acumulada (6 Meses):</span>
+                            <span class="text-xl font-bold text-emerald-400 font-mono">39.525,00 €</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-300 block">Equivalente Total em Escudos Cabo-Verdianos:</span>
+                            <span class="text-xl font-bold text-white font-mono">4.358.224,13 CVE</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 8: DEPLOY & CONFIG -->
+            <section id="tab-deploy" class="space-y-6 hidden">
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Configuração de Deploy Instantâneo (Vercel & Supabase)</h3>
+                        <p class="text-sm text-slate-400">Parâmetros essenciais de infraestrutura para colocar o ecossistema no ar.</p>
+                    </div>
+
+                    <div class="space-y-4 font-mono text-xs">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="text-brand-400 font-bold">1. Variáveis de Ambiente Necessárias (.env)</div>
+                            <pre class="text-slate-300 overflow-x-auto">
+NEXT_PUBLIC_SUPABASE_URL=https://sua-instancia.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anonima
+SUPABASE_SERVICE_ROLE_KEY=sua-chave-servico-modo-transacao
+CLOUDFLARE_R2_BUCKET_URL=https://sua-r2-bucket.r2.cloudflarestorage.com
+VOICE_ENGINE_KOKORO_ENDPOINT=http://localhost:8880/v1/audio/speech
+GOVERNANCE_EMAIL=ronydias3134@gmail.com
+                            </pre>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="text-emerald-400 font-bold">2. Instrução SQL de Agendamento Nativo (pg_cron)</div>
+                            <pre class="text-slate-300 overflow-x-auto">
+-- Agendamento autónomo dos 200 perfis a cada 15 minutos sem Race Condition
+SELECT cron.schedule('disparo-frota-avatarix', '*/15 * * * *', $$
+  SELECT processar_lote_conteudos_autonomos();
+$$);
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- FOOTER INSTITUCIONAL -->
+    <footer class="border-t border-slate-800 bg-slate-900 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-2">
+            <div>
+                © 2026 <span class="font-bold text-slate-300">AVATARIX PLATFORM V9</span> — Autonomous Pure-Digital Suite.
+            </div>
+            <div class="flex items-center space-x-3">
+                <span>Governança: <strong class="text-brand-400">RD Ecosystem / Powered by RD</strong></span>
+                <span>•</span>
+                <span class="text-slate-400">Selo: RD Approved</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVITY & PIPELINE SIMULATION SCRIPT -->
+    <script>
+        function switchTab(tabId) {
+            const tabs = ['dashboard', 'avatarix', 'evergreen', 'gaming', 'b2b', 'highmargin', 'financial', 'deploy'];
+            tabs.forEach(id => {
+                const tabElement = document.getElementById(`tab-${id}`);
+                const btnElement = document.getElementById(`btn-${id}`);
+                if (tabElement) tabElement.classList.add('hidden');
+                if (btnElement) {
+                    btnElement.classList.remove('active', 'bg-brand-600', 'text-white', 'shadow-md');
+                    btnElement.classList.add('text-slate-400');
+                }
+            });
+
+            const selectedTab = document.getElementById(`tab-${tabId}`);
+            const selectedBtn = document.getElementById(`btn-${tabId}`);
+            if (selectedTab) selectedTab.classList.remove('hidden');
+            if (selectedBtn) {
+                selectedBtn.classList.add('active', 'bg-brand-600', 'text-white', 'shadow-md');
+                selectedBtn.classList.remove('text-slate-400');
+            }
+        }
+
+        function runPipelineSimulation() {
+            const logsContainer = document.getElementById('pipelineLogs');
+            const timestamps = new Date().toLocaleTimeString();
+            
+            const simulatedLogs = [
+                `[${timestamps}] [TRIGGER] Disparo cron ativado via Supavisor Transaction Mode...`,
+                `[${timestamps}] [LOCK] Executando 'FOR UPDATE SKIP LOCKED' em 50 nós do Nicho 01 (Mecânica)...`,
+                `[${timestamps}] [VOICE] Sintetizando áudio com Kokoro-82M (Latência: 34ms, Custo: 0.00 EUR)...`,
+                `[${timestamps}] [AVATAR] Animando robô sintético via Hallo-Live (20.38 FPS)...`,
+                `[${timestamps}] [MODERATION] Llama Guard 3: Brand Safety 100% OK (Selo RD Approved injetado)...`,
+                `[${timestamps}] [PROXY] Transmitindo via IP Residencial dedicado com Sticky Session 24h...`,
+                `[${timestamps}] [SUCCESS] 200/200 conteúdos publicados com sucesso nas redes. R2 limpo (Storage: 0.00 EUR).`
+            ];
+
+            logsContainer.innerHTML = '';
+            simulatedLogs.forEach((log, index) => {
+                setTimeout(() => {
+                    const logLine = document.createElement('div');
+                    logLine.className = index === simulatedLogs.length - 1 ? 'text-emerald-400 font-bold' : 'text-slate-300';
+                    logLine.innerText = log;
+                    logsContainer.appendChild(logLine);
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                }, index * 400);
+            });
+        }
+    </script>
+</body>
+  </html>
+          
