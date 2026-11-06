@@ -1,33 +1,161 @@
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avatarix V9 Enterprise</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avatarix V9 Enterprise — RD Ecosystem</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center p-6 text-center font-sans">
-    <div class="bg-slate-900 border border-emerald-500/40 p-8 rounded-2xl shadow-2xl max-w-md w-full space-y-4">
-        <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl mx-auto flex items-center justify-center text-3xl font-bold border border-emerald-500/40">
-            ✓
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- Header & Barramento Superior -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
+          RD
         </div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">AVATARIX V9 CONECTADO!</h1>
-        <p class="text-sm text-slate-400">Servidor do GitHub Pages sincronizado com sucesso.</p>
-        
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs font-mono">
-            <div class="text-emerald-400 font-bold">CHANCELA: RD APPROVED</div>
-            <div class="text-slate-300">CÂMBIO FIXO: 1 EUR = 110.265 CVE</div>
-            <div class="text-indigo-400">FROTA VIRTUAL: 200 NÓS ATIVOS</div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white leading-none">AVATARIX V9 <span class="text-emerald-400 font-extrabold text-xs px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 ml-1">ENTERPRISE</span></h1>
+          <p class="text-xs text-slate-400">Fundador: Ronilson Dias (Rony Dias) | Gerente: Ronny Assis</p>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center space-x-3 text-xs font-mono">
+        <span class="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300">CÂMBIO FIXO: 1 EUR = 110.265 CVE</span>
+        <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> SYSTEM ONLINE
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- Hero Banner Status -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-6 md:p-8">
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="max-w-3xl space-y-4">
+        <div class="inline-flex items-center space-x-2 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>RD CERTIFIED / APPROVED — GAVETAS ESTANQUES ATIVAS</span>
+        </div>
+        <h2 class="text-2xl md:text-4xl font-extrabold text-white tracking-tight">
+          Painel de Controlo Central do Ecossistema Autónomo
+        </h2>
+        <p class="text-sm md:text-base text-slate-400 leading-relaxed">
+          Cérebro operativo centralizado na arquitetura <i>Zero Cost Stack</i>. Gestão autónoma de conteúdos, engenharia hidráulica ELECTRA, agrotech, streaming desportivo e tráfego global.
+        </p>
+      </div>
+    </div>
+
+    <!-- Módulos Core do Ecossistema (Gavetas Estanques) -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-cubes text-emerald-400"></i> Suíte Modular de Alta Margem
+        </h3>
+        <span class="text-xs text-slate-400 font-mono">7 Módulos Integrados</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- 1. Avatarix Engine -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 hover:border-emerald-500/40 transition duration-200 group">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-robot"></i>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">AUTÓNOMO</span>
+          </div>
+          <h4 class="mt-4 font-bold text-white group-hover:text-emerald-400 transition">Avatarix Engine</h4>
+          <p class="mt-1 text-xs text-slate-400">Geração de avatares IA, produção de vídeo em lote e distribuição contínua pela frota de nós.</p>
         </div>
 
-        <div class="pt-2">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-400/10 text-emerald-400 border border-emerald-400/20">
-                ● Sistema Operacional a 100%
-            </span>
+        <!-- 2. Canalizar-te -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 hover:border-emerald-500/40 transition duration-200 group">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-faucet-drip"></i>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">NORMA ELECTRA</span>
+          </div>
+          <h4 class="mt-4 font-bold text-white group-hover:text-emerald-400 transition">Canalizar-te</h4>
+          <p class="mt-1 text-xs text-slate-400">Calculadoras PPR/PVC/PEAD, perdas de carga, memórias descritivas e gerador de BOQ com campo para assinatura manual.</p>
         </div>
-    </div>
+
+        <!-- 3. Agrotech Suite -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 hover:border-emerald-500/40 transition duration-200 group">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-seedling"></i>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">CASA DE MEIO</span>
+          </div>
+          <h4 class="mt-4 font-bold text-white group-hover:text-emerald-400 transition">Agrotech Suite</h4>
+          <p class="mt-1 text-xs text-slate-400">Dimensionamento de fertirrigação gota-a-gota, nutrição de solos e planeamento hortícola para a parcela agrícola.</p>
+        </div>
+
+        <!-- 4. Flow B2B -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 hover:border-emerald-500/40 transition duration-200 group">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">AUTOMATION</span>
+          </div>
+          <h4 class="mt-4 font-bold text-white group-hover:text-emerald-400 transition">Flow B2B</h4>
+          <p class="mt-1 text-xs text-slate-400">Motor de automação de fluxos comerciais, orçamentos empresariais e contratos de prestação de serviços.</p>
+        </div>
+
+        <!-- 5. Live Sports (Leandro Dias) -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 hover:border-emerald-500/40 transition duration-200 group">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-futbol"></i>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">LEANDRO DIAS</span>
+          </div>
+          <h4 class="mt-4 font-bold text-white group-hover:text-emerald-400 transition">Live Sports & Football</h4>
+          <p class="mt-1 text-xs text-slate-400">Hub de transmissões desportivas, estatísticas ao vivo e retenção de audiência desportiva sob a nossa tutela.</p>
+        </div>
+
+        <!-- 6. Marketplace Autónomo & Evergreen Catalog -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 hover:border-emerald-500/40 transition duration-200 group">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-store"></i>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">100 PRODUCTS</span>
+          </div>
+          <h4 class="mt-4 font-bold text-white group-hover:text-emerald-400 transition">Marketplace Autónomo</h4>
+          <p class="mt-1 text-xs text-slate-400">Venda dinâmica do catálogo de produtos atemporais (Evergreen) com precificação inteligente e subscrições.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Telemetria do Sistema -->
+    <section class="rounded-xl bg-slate-900/40 border border-slate-800/80 p-5 font-mono text-xs space-y-3">
+      <div class="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-2">
+        <span class="flex items-center gap-2"><i class="fa-solid fa-terminal text-emerald-400"></i> TELEMETRIA & INFRAESTRUTURA</span>
+        <span class="text-emerald-400">GITHUB PAGES READY</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-slate-300">
+        <div><span class="text-slate-500">Host:</span> GitHub Static Edge</div>
+        <div><span class="text-slate-500">Database:</span> Supabase / PostgreSQL</div>
+        <div><span class="text-slate-500">Status:</span> 200 PLANOS ATIVOS</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="border-t border-slate-800/60 py-6 text-center text-xs text-slate-500 space-y-1">
+    <p>© 2026 RD Ecosystem — Powered by RD (Ronilson Dias). Todos os direitos reservados.</p>
+    <p class="text-[11px] text-slate-600">Certificação Técnica "RD Approved" | Operando a partir de Mindelo, São Vicente, Cabo Verde</p>
+  </footer>
+
 </body>
 </html>
- 
- 
